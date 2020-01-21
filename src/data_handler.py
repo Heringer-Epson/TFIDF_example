@@ -29,6 +29,8 @@ class Data_Handler(object):
         pass
 
     def nltk2wordnet(self, nltk_tag):
+        """Dictionary to map NLTK POS tags and word2vec tags. 
+        """
         if nltk_tag.startswith('J'):
             return wordnet.ADJ
         elif nltk_tag.startswith('V'):
@@ -41,7 +43,8 @@ class Data_Handler(object):
             return None
 
     def clean_tokenize(self, text):
-
+        """Tokenize and clean corpus.
+        """
         #Convert all text to lower case.
         text = text.str.lower()
 

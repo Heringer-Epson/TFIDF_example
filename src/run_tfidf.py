@@ -15,14 +15,13 @@ class Tfidf_Experiment(object):
     """
     Description:
     ------------
-    Uses Glove for text embedding on a labeled corpus. Then applies an ANN to
+    Uses TFIDF for text embedding on a labeled corpus. Then applies an SVM to
     predict labels on test data. 
 
     Parameters:
     -----------
-    embedding_dim : ~int
-        Dimension of vectors in the space in which words are represented.
-        Accepts 100, 200 or 300. Default is 100.    
+    path_to_corpus : ~str
+        Relative or absolute path to the file corpus.csv.    
     
     Useful resources:
     -----------------
@@ -33,20 +32,20 @@ class Tfidf_Experiment(object):
     None
     """        
     def __init__(self, path_to_corpus):
-        self.path_to_corpus = path_to_corpus
+        self._path_to_corpus = path_to_corpus
 
         # default params
         self.seed = 234012587
         self.test_split_fraction = .2
         
         self.df = None
+        self.p = None
         self.Train_X, self.Test_X = None, None
         self.Train_y, self.Test_y = None, None
-        self.p = None
         
         self.run_experiment()
 
-    @property
+    @property #Property enforcement of input variables.
     def path_to_corpus(self):
         return self._path_to_corpus
     
@@ -57,29 +56,40 @@ class Tfidf_Experiment(object):
         self._path_to_corpus = value
         
     def collect_data(self):
+        """Read data from corpus and remove nan rows.
+        """
         self.df = pd.read_csv(self.path_to_corpus, encoding='latin-1')
         self.df.dropna(how='all', inplace=True)
 
     def split_data(self):
+        """Divide the data into train and test. Train data will later be futher
+        divided in validation subsets. 
+        """
         X = self.df.text
         y = self.df.label
         self.Train_X, self.Test_X, self.Train_y, self.Test_y = train_test_split(
           X, y, test_size=self.test_split_fraction, random_state=self.seed)
 
-        self.max_length = max([len(s.split()) for s in self.Train_X])
-
     def encode_target(self):
+        """Encode labels. Since this is a binary classification problem, the
+        labels will be assigned either 0 or 1.
+        """
         Encoder = LabelEncoder()
         self.Train_y = Encoder.fit_transform(self.Train_y)
         self.Test_y = Encoder.fit_transform(self.Test_y)        
 
     def perform_embedding(self):
+        """Use an instance of the Data_Handler class to tokenize the data.
+        POS-tagging is enforced.
+        """
         DH = Data_Handler()
         self.Train_X = DH.clean_tokenize(self.Train_X)
         self.Test_X = DH.clean_tokenize(self.Test_X)
-
         
     def create_pipeline(self):
+        """Create a 2-step pipeline for the ML application. The data processing
+        could be included here as well.
+        """
         Tfidf_vect = TfidfVectorizer(max_features=5000)
         SVM = svm.SVC(kernel='linear', degree=3, gamma='auto')      
         
@@ -88,18 +98,23 @@ class Tfidf_Experiment(object):
                            ])
         
     def train_model(self):
-
-        param_grid = {'svm__C': np.logspace(-2., 1., 10)}       
+        """Train model using a parameter grid to optimize the regularization
+        parameter 'C' in the SVM model.
+        """
+        param_grid = {'svm__C': np.logspace(-2., 1., 4)}       
 
         grid = GridSearchCV(
           self.p, cv=4, n_jobs=4, param_grid=param_grid, scoring='roc_auc', 
           return_train_score=True, verbose=0)
         grid.fit(self.Train_X, self.Train_y)
                 
+        #Make predictions using the fitted model and the test data.
         predictions = grid.predict(self.Test_X)
         print('Model accuracy',accuracy_score(predictions, self.Test_y)*100.)
     
     def run_experiment(self):
+        """Call all the routines above.
+        """
         self.collect_data()
         self.split_data()
         self.encode_target()
