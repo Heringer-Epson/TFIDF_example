@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import nltk
 
 from sklearn import svm
 from sklearn.model_selection import train_test_split
@@ -11,8 +12,7 @@ from sklearn.pipeline import Pipeline
 
 from data_handler import Data_Handler
 
-#Uncomment the following to install nltk subpackages:
-#nltk.download('punkt')
+#Uncomment the following to install nltk subpackages. Execute only once.
 #nltk.download('stopwords')
 #nltk.download('averaged_perceptron_tagger')
 #nltk.download('wordnet')
@@ -107,7 +107,7 @@ class Tfidf_Experiment(object):
         """Train model using a parameter grid to optimize the regularization
         parameter 'C' in the SVM model.
         """
-        param_grid = {'svm__C': np.logspace(-2., 1., 4)}       
+        param_grid = {'svm__C': np.logspace(-2., 1., 8)}       
 
         grid = GridSearchCV(
           self.p, cv=4, n_jobs=4, param_grid=param_grid, scoring='roc_auc', 

@@ -5,7 +5,7 @@
 * numpy
 * pandas
 * sklearn
-* nltk and sub-packages: punkt, stopwords, averaged_perceptron_tagger, wordnet
+* nltk and sub-packages: stopwords, averaged_perceptron_tagger, wordnet
 
 ### Installation
 No installation is required. Recommended conda environment is:
