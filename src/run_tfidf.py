@@ -11,6 +11,12 @@ from sklearn.pipeline import Pipeline
 
 from data_handler import Data_Handler
 
+#Uncomment the following to install nltk subpackages:
+#nltk.download('punkt')
+#nltk.download('stopwords')
+#nltk.download('averaged_perceptron_tagger')
+#nltk.download('wordnet')
+
 class Tfidf_Experiment(object):
     """
     Description:
